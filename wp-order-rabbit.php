@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 1.5.2
+ * Version: 1.5.5
  * Author: Your Name
  */
 
@@ -187,92 +187,108 @@ function wpor_create_payment_intent() {
 add_action('wp_ajax_wpor_create_payment_intent', 'wpor_create_payment_intent');
 add_action('wp_ajax_nopriv_wpor_create_payment_intent', 'wpor_create_payment_intent');
 
+
 function wpor_cart_page() {
     $cart = WPOR_Cart::get_cart();
-    $total_price = WPOR_Cart::get_cart_total();
 
     if (empty($cart)) {
         return '<p>Your cart is empty.</p>';
     }
 
-    // Initialize Stripe Payment Intent
-    $stripe = new WPOR_Stripe();
-    $payment_intent = $stripe->create_payment_intent($total_price);
+    $output = '<h2>Your Cart</h2>';
+    $output .= '<ul>';
 
-    if ($payment_intent) {
-        $output = '<h2>Your Cart</h2>';
-        $output .= '<ul>';
-        foreach ($cart as $item_id => $item) {
-            $menu_item = get_post($item_id);
-            $output .= '<li>' . $menu_item->post_title . ' x' . $item['quantity'] . '</li>';
-        }
-        $output .= '</ul>';
-        $output .= '<p>Total: £' . $total_price . '</p>';
-        
-        // Stripe checkout form with card element
-        $output .= '<div id="card-element">
-            <!-- A Stripe Element will be inserted here. -->
-        </div>';
-        $output .= '<div id="card-errors" role="alert"></div>';  // Show errors from Stripe
-
-        $output .= '<button id="stripe-checkout" data-payment-intent="' . $payment_intent->id . '">Checkout</button>';
-
-        // Include Stripe.js and custom JS
-      
-        $output .= '<script type="text/javascript">
-           var stripe = Stripe("<?php echo STRIPE_TEST_PUBLISHABLE_KEY; ?>");
-var elements = stripe.elements();
-var cardElement = elements.create("card");
-cardElement.mount("#card-element");
-
-var checkoutButton = document.getElementById("stripe-checkout");
-
-checkoutButton.addEventListener("click", function (event) {
-    event.preventDefault();
-
-    var paymentIntentId = checkoutButton.getAttribute("data-payment-intent");
-
-    // Fetch the client secret for this payment intent
-    fetch("<?php echo admin_url('admin-ajax.php'); ?>", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            action: "wpor_create_payment_intent",
-            payment_intent_id: paymentIntentId
-        })
-    })
-    .then(function(response) { return response.json(); })
-    .then(function(data) {
-        if (data.success) {
-            var clientSecret = data.data.client_secret; // Extract the client_secret from the response
-
-            // Confirm the payment using the client secret
-            stripe.confirmCardPayment(clientSecret, {
-                payment_method: {
-                    card: cardElement
-                }
-            }).then(function(result) {
-                if (result.error) {
-                    console.log(result.error.message); // Handle error
-                } else {
-                    window.location.href = "<?php echo site_url('/thank-you'); ?>"; // Redirect on success
-                }
-            });
-        } else {
-            console.log('Error retrieving client secret:', data.message);
-        }
-    });
-});
-        </script>';
-
-        return $output;
-    } else {
-        return '<p>Error processing payment. Try again later.</p>';
+    foreach ($cart as $item_id => $item) {
+        $menu_item = get_post($item_id);
+        $output .= '<li>' . $menu_item->post_title . ' x' . $item['quantity'] . '</li>';
     }
+
+    $output .= '</ul>';
+    $output .= '<a href="' . esc_url(add_query_arg('wpor_add_to_wc_cart', 'true', wc_get_checkout_url())) . '" class="button">Proceed to Checkout</a>';
+
+    return $output;
 }
 add_shortcode('wpor_cart', 'wpor_cart_page');
+
+// function wpor_cart_page() {
+//     $cart = WPOR_Cart::get_cart();
+//     $total_price = WPOR_Cart::get_cart_total();
+
+//     if (empty($cart)) {
+//         return '<p>Your cart is empty.</p>';
+//     }
+
+//     // Initialize Stripe Payment Intent
+//     $stripe = new WPOR_Stripe();
+//     $payment_intent = $stripe->create_payment_intent($total_price);
+
+//     if ($payment_intent) {
+//         $output = '<h2>Your Cart</h2>';
+//         $output .= '<ul>';
+//         foreach ($cart as $item_id => $item) {
+//             $menu_item = get_post($item_id);
+//             $output .= '<li>' . $menu_item->post_title . ' x' . $item['quantity'] . '</li>';
+//         }
+//         $output .= '</ul>';
+//         $output .= '<p>Total: £' . $total_price . '</p>';
+        
+//         // Stripe checkout form with card element
+//         $output .= '<div id="card-element">
+//             <!-- A Stripe Element will be inserted here. -->
+//         </div>';
+//         $output .= '<div id="card-errors" role="alert"></div>';  // Show errors from Stripe
+
+//         $output .= '<button id="stripe-checkout" data-payment-intent="' . $payment_intent->id . '">Checkout</button>';
+
+//         // Include Stripe.js and custom JS
+      
+//         $output .= '<script type="text/javascript">
+//             var stripe = Stripe("' . STRIPE_TEST_PUBLISHABLE_KEY . '");
+//             var elements = stripe.elements();
+//             var cardElement = elements.create("card");
+
+//             cardElement.mount("#card-element");
+
+//             var checkoutButton = document.getElementById("stripe-checkout");
+
+//             checkoutButton.addEventListener("click", function (event) {
+//                 event.preventDefault();
+
+//                 var paymentIntentId = checkoutButton.getAttribute("data-payment-intent");
+
+//                 fetch("' . admin_url('admin-ajax.php') . '", {
+//                     method: "POST",
+//                     headers: { "Content-Type": "application/json" },
+//                     body: JSON.stringify({
+//                         action: "wpor_create_payment_intent",
+//                         payment_intent_id: paymentIntentId
+//                     })
+//                 })
+//                 .then(function(response) { return response.json(); })
+//                 .then(function(data) {
+//                     var clientSecret = data.client_secret;
+
+//                     stripe.confirmCardPayment(clientSecret, {
+//                         payment_method: {
+//                             card: cardElement,
+//                         }
+//                     }).then(function(result) {
+//                         if (result.error) {
+//                             console.log(result.error.message);
+//                         } else {
+//                             window.location.href = "' . site_url('/thank-you') . '";
+//                         }
+//                     });
+//                 });
+//             });
+//         </script>';
+
+//         return $output;
+//     } else {
+//         return '<p>Error processing payment. Try again later.</p>';
+//     }
+// }
+// add_shortcode('wpor_cart', 'wpor_cart_page');
 
 
 // function wpor_cart_page() {
@@ -387,3 +403,27 @@ add_shortcode('wpor_cart', 'wpor_cart_page');
 
 
 
+add_action('template_redirect', 'wpor_add_to_woocommerce_cart');
+
+function wpor_add_to_woocommerce_cart() {
+    if (isset($_GET['wpor_add_to_wc_cart']) && $_GET['wpor_add_to_wc_cart'] == 'true') {
+        WC()->cart->empty_cart(); // Clear existing cart
+
+        $cart = WPOR_Cart::get_cart();
+
+        foreach ($cart as $item_id => $item) {
+            $menu_item = get_post($item_id);
+            $price = get_post_meta($item_id, 'wpor_price', true);
+            
+            // Add custom WooCommerce product for WP Order Rabbit items
+            $product_id = wpor_create_woocommerce_product($menu_item->post_title, $price);
+            
+            // Add product to WooCommerce cart
+            WC()->cart->add_to_cart($product_id, $item['quantity']);
+        }
+
+        // Redirect to WooCommerce checkout
+        wp_safe_redirect(wc_get_checkout_url());
+        exit;
+    }
+}
