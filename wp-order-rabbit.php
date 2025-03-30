@@ -401,7 +401,16 @@ add_shortcode('wpor_cart', 'wpor_cart_page');
 
 // add_shortcode('wpor_cart', 'wpor_cart_page');
 
+function wpor_create_woocommerce_product($title, $price) {
+    $product = new WC_Product_Simple();
+    $product->set_name($title);
+    $product->set_price($price);
+    $product->set_regular_price($price);
+    $product->set_catalog_visibility('hidden'); // Hide from shop
+    $product->save();
 
+    return $product->get_id();
+}
 
 add_action('template_redirect', 'wpor_add_to_woocommerce_cart');
 
@@ -428,13 +437,4 @@ function wpor_add_to_woocommerce_cart() {
     }
 }
 
-function wpor_create_woocommerce_product($title, $price) {
-    $product = new WC_Product_Simple();
-    $product->set_name($title);
-    $product->set_price($price);
-    $product->set_regular_price($price);
-    $product->set_catalog_visibility('hidden'); // Hide from shop
-    $product->save();
 
-    return $product->get_id();
-}
