@@ -2,9 +2,19 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 1.3.0
+ * Version: 1.3.1
  * Author: Your Name
  */
+
+ // Start the session if it's not already started
+function wpor_start_session() {
+    if (!session_id()) {
+        session_start();
+    }
+}
+
+add_action('init', 'wpor_start_session');
+
 
 // Define constants for plugin paths
 define('WPOR_PLUGIN_DIR', plugin_dir_path(__FILE__));
