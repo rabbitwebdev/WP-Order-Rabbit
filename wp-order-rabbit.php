@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 1.5.1
+ * Version: 1.5.2
  * Author: Your Name
  */
 
@@ -220,44 +220,51 @@ function wpor_cart_page() {
         // Include Stripe.js and custom JS
       
         $output .= '<script type="text/javascript">
-            var stripe = Stripe("' . STRIPE_TEST_PUBLISHABLE_KEY . '");
-            var elements = stripe.elements();
-            var cardElement = elements.create("card");
+           var stripe = Stripe("<?php echo STRIPE_TEST_PUBLISHABLE_KEY; ?>");
+var elements = stripe.elements();
+var cardElement = elements.create("card");
+cardElement.mount("#card-element");
 
-            cardElement.mount("#card-element");
+var checkoutButton = document.getElementById("stripe-checkout");
 
-            var checkoutButton = document.getElementById("stripe-checkout");
+checkoutButton.addEventListener("click", function (event) {
+    event.preventDefault();
 
-            checkoutButton.addEventListener("click", function (event) {
-                event.preventDefault();
+    var paymentIntentId = checkoutButton.getAttribute("data-payment-intent");
 
-                var paymentIntentId = checkoutButton.getAttribute("data-payment-intent");
+    // Fetch the client secret for this payment intent
+    fetch("<?php echo admin_url('admin-ajax.php'); ?>", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            action: "wpor_create_payment_intent",
+            payment_intent_id: paymentIntentId
+        })
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+        if (data.success) {
+            var clientSecret = data.data.client_secret; // Extract the client_secret from the response
 
-                fetch("' . admin_url('admin-ajax.php') . '", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        action: "wpor_create_payment_intent",
-                        payment_intent_id: paymentIntentId
-                    })
-                })
-                .then(function(response) { return response.json(); })
-                .then(function(data) {
-                    var clientSecret = data.client_secret;
-
-                    stripe.confirmCardPayment(clientSecret, {
-                        payment_method: {
-                            card: cardElement,
-                        }
-                    }).then(function(result) {
-                        if (result.error) {
-                            console.log(result.error.message);
-                        } else {
-                            window.location.href = "' . site_url('/thank-you') . '";
-                        }
-                    });
-                });
+            // Confirm the payment using the client secret
+            stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: cardElement
+                }
+            }).then(function(result) {
+                if (result.error) {
+                    console.log(result.error.message); // Handle error
+                } else {
+                    window.location.href = "<?php echo site_url('/thank-you'); ?>"; // Redirect on success
+                }
             });
+        } else {
+            console.log('Error retrieving client secret:', data.message);
+        }
+    });
+});
         </script>';
 
         return $output;
