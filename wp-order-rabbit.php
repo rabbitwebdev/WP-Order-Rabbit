@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 1.7.0
+ * Version: 1.8.0
  * Author: Your Name
  */
 
@@ -454,3 +454,42 @@ function wpor_add_to_woocommerce_cart() {
 }
 
 
+add_filter('woocommerce_checkout_fields', 'wpor_add_delivery_address_field');
+
+function wpor_add_delivery_address_field($fields) {
+    $fields['billing']['wpor_delivery_address'] = array(
+        'type'        => 'text',
+        'label'       => __('Delivery Address', 'wpor'),
+        'placeholder' => __('Enter your delivery address', 'wpor'),
+        'required'    => true, // Make it required
+        'class'       => array('form-row-wide'),
+        'priority'    => 25, // Position after billing address
+    );
+
+    return $fields;
+}
+
+add_action('woocommerce_checkout_update_order_meta', 'wpor_save_delivery_address');
+
+function wpor_save_delivery_address($order_id) {
+    if (!empty($_POST['wpor_delivery_address'])) {
+        update_post_meta($order_id, '_wpor_delivery_address', sanitize_text_field($_POST['wpor_delivery_address']));
+    }
+}
+
+
+add_action('woocommerce_admin_order_data_after_billing_address', 'wpor_display_delivery_address_in_admin', 10, 1);
+
+function wpor_display_delivery_address_in_admin($order) {
+    $delivery_address = get_post_meta($order->get_id(), '_wpor_delivery_address', true);
+    if (!empty($delivery_address)) {
+        echo '<p><strong>' . __('Delivery Address:', 'wpor') . '</strong> ' . esc_html($delivery_address) . '</p>';
+    }
+}
+
+add_filter('woocommerce_email_order_meta_keys', 'wpor_add_delivery_address_to_email');
+
+function wpor_add_delivery_address_to_email($keys) {
+    $keys['_wpor_delivery_address'] = 'Delivery Address';
+    return $keys;
+}
