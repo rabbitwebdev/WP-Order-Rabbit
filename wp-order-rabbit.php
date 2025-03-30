@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 1.4.0
+ * Version: 1.4.1
  * Author: Your Name
  */
 
@@ -128,7 +128,7 @@ function wpor_display_menu() {
         $output .= '<li>';
         $output .= '<h3>' . $item->post_title . '</h3>';
         $output .= '<p>' . $item->post_content . '</p>';
-        $output .= '<span>$' . get_post_meta($item->ID, 'price', true) . '</span>';
+        $output .= '<span>£' . get_post_meta($item->ID, 'price', true) . '</span>';
         $output .= '<button class="add-to-cart" data-item-id="' . $item->ID . '">Add to Cart</button>';
         $output .= '</li>';
     }
@@ -167,6 +167,23 @@ function wpor_add_to_cart() {
 add_action('wp_ajax_wpor_add_to_cart', 'wpor_add_to_cart');
 add_action('wp_ajax_nopriv_wpor_add_to_cart', 'wpor_add_to_cart');
 
+function wpor_create_payment_intent() {
+    if (isset($_POST['payment_intent_id'])) {
+        $payment_intent_id = sanitize_text_field($_POST['payment_intent_id']);
+        $stripe = new WPOR_Stripe();
+        $payment_intent = $stripe->create_payment_intent($payment_intent_id);
+        
+        if ($payment_intent) {
+            wp_send_json_success(['client_secret' => $payment_intent->client_secret]);
+        } else {
+            wp_send_json_error(['message' => 'Error creating payment intent.']);
+        }
+    }
+    wp_die();
+}
+
+add_action('wp_ajax_wpor_create_payment_intent', 'wpor_create_payment_intent');
+add_action('wp_ajax_nopriv_wpor_create_payment_intent', 'wpor_create_payment_intent');
 
 function wpor_cart_page() {
     $cart = WPOR_Cart::get_cart();
@@ -344,20 +361,4 @@ add_shortcode('wpor_cart', 'wpor_cart_page');
 // add_shortcode('wpor_cart', 'wpor_cart_page');
 
 
-function wpor_create_payment_intent() {
-    if (isset($_POST['payment_intent_id'])) {
-        $payment_intent_id = sanitize_text_field($_POST['payment_intent_id']);
-        $stripe = new WPOR_Stripe();
-        $payment_intent = $stripe->create_payment_intent($payment_intent_id);
-        
-        if ($payment_intent) {
-            wp_send_json_success(['client_secret' => $payment_intent->client_secret]);
-        } else {
-            wp_send_json_error(['message' => 'Error creating payment intent.']);
-        }
-    }
-    wp_die();
-}
 
-add_action('wp_ajax_wpor_create_payment_intent', 'wpor_create_payment_intent');
-add_action('wp_ajax_nopriv_wpor_create_payment_intent', 'wpor_create_payment_intent');
