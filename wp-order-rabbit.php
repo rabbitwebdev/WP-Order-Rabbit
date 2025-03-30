@@ -2,18 +2,11 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 1.3.1
+ * Version: 1.3.2
  * Author: Your Name
  */
 
- // Start the session if it's not already started
-function wpor_start_session() {
-    if (!session_id()) {
-        session_start();
-    }
-}
 
-add_action('init', 'wpor_start_session');
 
 
 // Define constants for plugin paths
@@ -115,7 +108,14 @@ function wpor_display_price_column($column, $post_id) {
 
 add_action('manage_wpor_menu_item_posts_custom_column', 'wpor_display_price_column', 10, 2);
 
+ // Start the session if it's not already started
+function wpor_start_session() {
+    if (!session_id()) {
+        session_start();
+    }
+}
 
+add_action('init', 'wpor_start_session');
 
 function wpor_display_menu() {
     $args = array('post_type' => 'wpor_menu_item', 'posts_per_page' => -1);
@@ -167,50 +167,11 @@ add_action('wp_ajax_nopriv_wpor_add_to_cart', 'wpor_add_to_cart');
 
 
 
-// function wpor_cart_page() {
-//     $cart = WPOR_Cart::get_cart();
-//     $total_price = WPOR_Cart::get_cart_total();
-
-//     // Display cart items and total price
-//     $output = '<h2>Your Cart</h2>';
-//     $output .= '<ul>';
-//     foreach ($cart as $item_id => $item) {
-//         $menu_item = get_post($item_id);
-//         $output .= '<li>' . $menu_item->post_title . ' x' . $item['quantity'] . '</li>';
-//     }
-//     $output .= '</ul>';
-//     $output .= '<p>Total: $' . $total_price . '</p>';
-
-//     // Stripe checkout button
-//     $stripe = new WPOR_Stripe();
-//     $payment_intent = $stripe->create_payment_intent($total_price);
-
-//     if ($payment_intent) {
-//         $output .= '<button id="stripe-checkout" data-payment-intent="' . $payment_intent->id . '">Checkout</button>';
-//     } else {
-//         $output .= '<p>Error processing payment. Try again later.</p>';
-//     }
-
-//     return $output;
-// }
-
-// add_shortcode('wpor_cart', 'wpor_cart_page');
-
-
-// function wpor_test_cart() {
-//     // For testing, add an item manually to the cart
-//     WPOR_Cart::add_item(857, 1); // Replace 123 with an actual post ID of a menu item
-// }
-// add_action('init', 'wpor_test_cart');
-
 function wpor_cart_page() {
     $cart = WPOR_Cart::get_cart();
     $total_price = WPOR_Cart::get_cart_total();
 
-    if (empty($cart)) {
-        return '<p>Your cart is empty.</p>';
-    }
-
+    // Display cart items and total price
     $output = '<h2>Your Cart</h2>';
     $output .= '<ul>';
     foreach ($cart as $item_id => $item) {
@@ -220,10 +181,49 @@ function wpor_cart_page() {
     $output .= '</ul>';
     $output .= '<p>Total: $' . $total_price . '</p>';
 
+    // Stripe checkout button
+    $stripe = new WPOR_Stripe();
+    $payment_intent = $stripe->create_payment_intent($total_price);
+
+    if ($payment_intent) {
+        $output .= '<button id="stripe-checkout" data-payment-intent="' . $payment_intent->id . '">Checkout</button>';
+    } else {
+        $output .= '<p>Error processing payment. Try again later.</p>';
+    }
+
     return $output;
 }
 
 add_shortcode('wpor_cart', 'wpor_cart_page');
+
+
+// function wpor_test_cart() {
+//     // For testing, add an item manually to the cart
+//     WPOR_Cart::add_item(857, 1); // Replace 123 with an actual post ID of a menu item
+// }
+// add_action('init', 'wpor_test_cart');
+
+// function wpor_cart_page() {
+//     $cart = WPOR_Cart::get_cart();
+//     $total_price = WPOR_Cart::get_cart_total();
+
+//     if (empty($cart)) {
+//         return '<p>Your cart is empty.</p>';
+//     }
+
+//     $output = '<h2>Your Cart</h2>';
+//     $output .= '<ul>';
+//     foreach ($cart as $item_id => $item) {
+//         $menu_item = get_post($item_id);
+//         $output .= '<li>' . $menu_item->post_title . ' x' . $item['quantity'] . '</li>';
+//     }
+//     $output .= '</ul>';
+//     $output .= '<p>Total: $' . $total_price . '</p>';
+
+//     return $output;
+// }
+
+// add_shortcode('wpor_cart', 'wpor_cart_page');
 
 
 // function wpor_cart_page() {
