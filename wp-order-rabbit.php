@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 1.0
+ * Version: 1.1
  * Author: Your Name
  */
 
@@ -50,6 +50,42 @@ function wpor_register_menu_items_post_type() {
 }
 
 add_action('init', 'wpor_register_menu_items_post_type');
+
+// Add a custom meta box for the price field
+function wpor_add_price_meta_box() {
+    add_meta_box(
+        'wpor_price_meta_box', // ID
+        'Price', // Title
+        'wpor_display_price_meta_box', // Callback function to display the field
+        'wpor_menu_item', // Post type
+        'normal', // Context
+        'high' // Priority
+    );
+}
+
+add_action('add_meta_boxes', 'wpor_add_price_meta_box');
+
+// Display the price input field in the meta box
+function wpor_display_price_meta_box($post) {
+    $price = get_post_meta($post->ID, 'price', true);
+    ?>
+    <label for="wpor_price">Price:</label>
+    <input type="number" name="wpor_price" id="wpor_price" value="<?php echo esc_attr($price); ?>" step="0.01" min="0" />
+    <?php
+}
+
+// Save the price field data when the post is saved
+function wpor_save_price_meta_box($post_id) {
+    // Check if it's a valid save request
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return $post_id;
+
+    if (isset($_POST['wpor_price'])) {
+        update_post_meta($post_id, 'price', sanitize_text_field($_POST['wpor_price']));
+    }
+    return $post_id;
+}
+
+add_action('save_post', 'wpor_save_price_meta_box');
 
 
 function wpor_display_menu() {
