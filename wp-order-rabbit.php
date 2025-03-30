@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 1.6.0
+ * Version: 1.7.0
  * Author: Your Name
  */
 
@@ -404,17 +404,29 @@ add_shortcode('wpor_cart', 'wpor_cart_page');
 function wpor_create_woocommerce_product($title, $price) {
     $product = new WC_Product_Simple();
     $product->set_name($title);
+    
+    // Convert price to a valid number
+    $price = floatval($price);
+    
+    // Ensure price is greater than zero
+    if ($price <= 0) {
+        $price = 1.00; // Set a default price if something goes wrong
+    }
+
     $product->set_price($price);
     $product->set_regular_price($price);
-    $product->set_status('publish'); // Make sure it's published
-    $product->set_catalog_visibility('hidden'); // Hide from shop
-    $product->set_virtual(true); // Mark as a virtual product (since it's a food order)
-    $product->set_manage_stock(false); // No stock management required
+    
+    $product->set_status('publish'); // Ensure it's published
+    $product->set_catalog_visibility('hidden'); // Hide from the shop
+    $product->set_virtual(true); // Make it a virtual product
+    $product->set_manage_stock(false); // No stock management
     $product->set_sold_individually(true); // Prevent duplicate purchases
-    $product->save();
 
-    return $product->get_id();
+    $product_id = $product->save(); // Save the product
+
+    return $product_id;
 }
+
 
 add_action('template_redirect', 'wpor_add_to_woocommerce_cart');
 
