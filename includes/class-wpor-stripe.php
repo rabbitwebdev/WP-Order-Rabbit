@@ -3,8 +3,8 @@ class WPOR_Stripe {
     private $stripe;
 
     public function __construct() {
-        \Stripe\Stripe::setApiKey('your-stripe-secret-key');
-        $this->stripe = new \Stripe\StripeClient('your-stripe-secret-key');
+        \Stripe\Stripe::setApiKey('sk_test_51D6ONeIF6Cy7jqRet27KpvHQKXN0jEKPm6tj2OUZhgjhbxKQY7QekwB3kothe2oVCRsvlOcFJme7AIBVqfwDuGVA00yBMG4twd');
+        $this->stripe = new \Stripe\StripeClient('sk_test_51D6ONeIF6Cy7jqRet27KpvHQKXN0jEKPm6tj2OUZhgjhbxKQY7QekwB3kothe2oVCRsvlOcFJme7AIBVqfwDuGVA00yBMG4twd');
     }
 
     public function create_payment_intent($amount) {
