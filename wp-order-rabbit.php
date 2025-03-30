@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 1.8.0
+ * Version: 1.9.0
  * Author: Your Name
  */
 
@@ -204,7 +204,7 @@ function wpor_cart_page() {
     }
 
     $output .= '</ul>';
-    $output .= '<a href="' . esc_url(add_query_arg('wpor_add_to_wc_cart', 'true', wc_get_checkout_url())) . '" class="button">Proceed to Checkout</a>';
+    $output .= '<a href="' . esc_url(add_query_arg('wpor_add_to_wc_cart', 'true', wc_get_checkout_url())) . '" class="button btn btn-secondary">Proceed to Checkout</a>';
 
     return $output;
 }
@@ -401,6 +401,33 @@ add_shortcode('wpor_cart', 'wpor_cart_page');
 
 // add_shortcode('wpor_cart', 'wpor_cart_page');
 
+
+
+
+add_action('template_redirect', 'wpor_add_to_woocommerce_cart');
+
+function wpor_add_to_woocommerce_cart() {
+    if (isset($_GET['wpor_add_to_wc_cart']) && $_GET['wpor_add_to_wc_cart'] == 'true') {
+        WC()->cart->empty_cart(); // Clear existing cart
+
+        $cart = WPOR_Cart::get_cart();
+
+        foreach ($cart as $item_id => $item) {
+            $menu_item = get_post($item_id);
+            $price = get_post_meta($item_id, 'price', true);
+            
+            // Add custom WooCommerce product for WP Order Rabbit items
+            $product_id = wpor_create_woocommerce_product($menu_item->post_title, $price);
+            
+            // Add product to WooCommerce cart
+            WC()->cart->add_to_cart($product_id, $item['quantity']);
+        }
+
+        // Redirect to WooCommerce checkout
+        wp_safe_redirect(wc_get_checkout_url());
+        exit;
+    }
+}
 function wpor_create_woocommerce_product($title, $price) {
     $product = new WC_Product_Simple();
     $product->set_name($title);
@@ -426,33 +453,6 @@ function wpor_create_woocommerce_product($title, $price) {
 
     return $product_id;
 }
-
-
-add_action('template_redirect', 'wpor_add_to_woocommerce_cart');
-
-function wpor_add_to_woocommerce_cart() {
-    if (isset($_GET['wpor_add_to_wc_cart']) && $_GET['wpor_add_to_wc_cart'] == 'true') {
-        WC()->cart->empty_cart(); // Clear existing cart
-
-        $cart = WPOR_Cart::get_cart();
-
-        foreach ($cart as $item_id => $item) {
-            $menu_item = get_post($item_id);
-            $price = get_post_meta($item_id, 'wpor_price', true);
-            
-            // Add custom WooCommerce product for WP Order Rabbit items
-            $product_id = wpor_create_woocommerce_product($menu_item->post_title, $price);
-            
-            // Add product to WooCommerce cart
-            WC()->cart->add_to_cart($product_id, $item['quantity']);
-        }
-
-        // Redirect to WooCommerce checkout
-        wp_safe_redirect(wc_get_checkout_url());
-        exit;
-    }
-}
-
 
 add_filter('woocommerce_checkout_fields', 'wpor_add_delivery_address_field');
 
