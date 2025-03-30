@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 1.2.5
+ * Version: 1.3.0
  * Author: Your Name
  */
 
@@ -121,10 +121,40 @@ function wpor_display_menu() {
         $output .= '</li>';
     }
     $output .= '</ul>';
+     // Include JavaScript to handle adding items to the cart
+    $output .= '<script type="text/javascript">
+        jQuery(document).ready(function($) {
+            $(".add-to-cart").click(function() {
+                var itemId = $(this).data("item-id");
+
+                $.post("'. admin_url('admin-ajax.php') .'", {
+                    action: "wpor_add_to_cart",
+                    item_id: itemId
+                }, function(response) {
+                    alert("Item added to cart!");
+                });
+            });
+        });
+    </script>';
+
     return $output;
 }
 
 add_shortcode('wpor_menu', 'wpor_display_menu');
+
+// Handle adding items to the cart via AJAX
+function wpor_add_to_cart() {
+    if (isset($_POST['item_id'])) {
+        $item_id = intval($_POST['item_id']);
+        WPOR_Cart::add_item($item_id, 1); // Default quantity is 1
+        wp_send_json_success('Item added to cart!');
+    }
+    wp_send_json_error('Invalid item ID');
+}
+
+add_action('wp_ajax_wpor_add_to_cart', 'wpor_add_to_cart');
+add_action('wp_ajax_nopriv_wpor_add_to_cart', 'wpor_add_to_cart');
+
 
 
 // function wpor_cart_page() {
@@ -163,13 +193,14 @@ add_shortcode('wpor_menu', 'wpor_display_menu');
 // }
 // add_action('init', 'wpor_test_cart');
 
-
-
 function wpor_cart_page() {
     $cart = WPOR_Cart::get_cart();
     $total_price = WPOR_Cart::get_cart_total();
 
-    // Display cart items and total price
+    if (empty($cart)) {
+        return '<p>Your cart is empty.</p>';
+    }
+
     $output = '<h2>Your Cart</h2>';
     $output .= '<ul>';
     foreach ($cart as $item_id => $item) {
@@ -179,20 +210,40 @@ function wpor_cart_page() {
     $output .= '</ul>';
     $output .= '<p>Total: $' . $total_price . '</p>';
 
-    // Stripe checkout button
-    $stripe = new WPOR_Stripe();
-    $payment_intent = $stripe->create_payment_intent($total_price);
-
-    if ($payment_intent) {
-        $output .= '<button id="stripe-checkout" data-payment-intent="' . $payment_intent->id . '">Checkout</button>';
-    } else {
-        $output .= '<p>Error processing payment. Try again later.</p>';
-    }
-
     return $output;
 }
 
 add_shortcode('wpor_cart', 'wpor_cart_page');
+
+
+// function wpor_cart_page() {
+//     $cart = WPOR_Cart::get_cart();
+//     $total_price = WPOR_Cart::get_cart_total();
+
+//     // Display cart items and total price
+//     $output = '<h2>Your Cart</h2>';
+//     $output .= '<ul>';
+//     foreach ($cart as $item_id => $item) {
+//         $menu_item = get_post($item_id);
+//         $output .= '<li>' . $menu_item->post_title . ' x' . $item['quantity'] . '</li>';
+//     }
+//     $output .= '</ul>';
+//     $output .= '<p>Total: $' . $total_price . '</p>';
+
+//     // Stripe checkout button
+//     $stripe = new WPOR_Stripe();
+//     $payment_intent = $stripe->create_payment_intent($total_price);
+
+//     if ($payment_intent) {
+//         $output .= '<button id="stripe-checkout" data-payment-intent="' . $payment_intent->id . '">Checkout</button>';
+//     } else {
+//         $output .= '<p>Error processing payment. Try again later.</p>';
+//     }
+
+//     return $output;
+// }
+
+// add_shortcode('wpor_cart', 'wpor_cart_page');
 
 // function wpor_cart_page() {
 //     $cart = WPOR_Cart::get_cart();
