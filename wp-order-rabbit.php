@@ -1,0 +1,103 @@
+<?php
+/**
+ * Plugin Name: WP Order Rabbit
+ * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
+ * Version: 1.0
+ * Author: Your Name
+ */
+
+// Define constants for plugin paths
+define('WPOR_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('WPOR_PLUGIN_URL', plugin_dir_url(__FILE__));
+
+// Include necessary files
+require_once WPOR_PLUGIN_DIR . 'includes/class-wpor-cart.php';
+require_once WPOR_PLUGIN_DIR . 'includes/class-wpor-stripe.php';
+require_once WPOR_PLUGIN_DIR . 'includes/class-wpor-orders.php';
+
+// Hook for activating the plugin
+function wpor_activate_plugin() {
+    // Register custom post types or perform other activation tasks
+    flush_rewrite_rules();
+}
+
+register_activation_hook(__FILE__, 'wpor_activate_plugin');
+
+// Hook for deactivating the plugin
+function wpor_deactivate_plugin() {
+    // Cleanup tasks like removing custom post types
+    flush_rewrite_rules();
+}
+
+register_deactivation_hook(__FILE__, 'wpor_deactivate_plugin');
+
+// Register styles and scripts
+function wpor_enqueue_assets() {
+    wp_enqueue_style('wpor-style', WPOR_PLUGIN_URL . 'assets/css/wpor-style.css');
+    wp_enqueue_script('wpor-scripts', WPOR_PLUGIN_URL . 'assets/js/wpor-scripts.js', array('jquery'), null, true);
+}
+
+add_action('wp_enqueue_scripts', 'wpor_enqueue_assets');
+
+// Register Custom Post Type for Menu Items
+function wpor_register_menu_items_post_type() {
+    $args = array(
+        'public' => true,
+        'label'  => 'Menu Items',
+        'supports' => array('title', 'editor'),
+    );
+    register_post_type('wpor_menu_item', $args);
+}
+
+add_action('init', 'wpor_register_menu_items_post_type');
+
+
+function wpor_display_menu() {
+    $args = array('post_type' => 'wpor_menu_item', 'posts_per_page' => -1);
+    $menu_items = get_posts($args);
+
+    $output = '<ul class="wpor-menu">';
+    foreach ($menu_items as $item) {
+        $output .= '<li>';
+        $output .= '<h3>' . $item->post_title . '</h3>';
+        $output .= '<p>' . $item->post_content . '</p>';
+        $output .= '<span>$' . get_post_meta($item->ID, 'price', true) . '</span>';
+        $output .= '<button class="add-to-cart" data-item-id="' . $item->ID . '">Add to Cart</button>';
+        $output .= '</li>';
+    }
+    $output .= '</ul>';
+    return $output;
+}
+
+add_shortcode('wpor_menu', 'wpor_display_menu');
+
+
+function wpor_cart_page() {
+    $cart = WPOR_Cart::get_cart();
+    $total_price = WPOR_Cart::get_cart_total();
+
+    // Display cart items and total price
+    $output = '<h2>Your Cart</h2>';
+    $output .= '<ul>';
+    foreach ($cart as $item_id => $item) {
+        $menu_item = get_post($item_id);
+        $output .= '<li>' . $menu_item->post_title . ' x' . $item['quantity'] . '</li>';
+    }
+    $output .= '</ul>';
+    $output .= '<p>Total: $' . $total_price . '</p>';
+
+    // Stripe checkout button
+    $stripe = new WPOR_Stripe();
+    $payment_intent = $stripe->create_payment_intent($total_price);
+
+    if ($payment_intent) {
+        $output .= '<button id="stripe-checkout" data-payment-intent="' . $payment_intent->id . '">Checkout</button>';
+    } else {
+        $output .= '<p>Error processing payment. Try again later.</p>';
+    }
+
+    return $output;
+}
+
+add_shortcode('wpor_cart', 'wpor_cart_page');
+
