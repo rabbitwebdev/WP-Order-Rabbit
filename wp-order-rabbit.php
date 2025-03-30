@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 1.4.5
+ * Version: 1.5.0
  * Author: Your Name
  */
 
@@ -188,11 +188,12 @@ add_action('wp_ajax_nopriv_wpor_create_payment_intent', 'wpor_create_payment_int
 function wpor_cart_page() {
     $cart = WPOR_Cart::get_cart();
     $total_price = WPOR_Cart::get_cart_total();
+
     if (empty($cart)) {
         return '<p>Your cart is empty.</p>';
     }
 
-    // Include Stripe checkout button
+    // Initialize Stripe Payment Intent
     $stripe = new WPOR_Stripe();
     $payment_intent = $stripe->create_payment_intent($total_price);
 
@@ -201,19 +202,33 @@ function wpor_cart_page() {
         $output .= '<ul>';
         foreach ($cart as $item_id => $item) {
             $menu_item = get_post($item_id);
-            $output .= '<li>' . $menu_item->post_title . ' ' . $item['quantity'] . '</li>';
+            $output .= '<li>' . $menu_item->post_title . ' x' . $item['quantity'] . '</li>';
         }
         $output .= '</ul>';
         $output .= '<p>Total: £' . $total_price . '</p>';
+        
+        // Stripe checkout form with card element
+        $output .= '<div id="card-element">
+            <!-- A Stripe Element will be inserted here. -->
+        </div>';
+        $output .= '<div id="card-errors" role="alert"></div>';  // Show errors from Stripe
+
         $output .= '<button id="stripe-checkout" data-payment-intent="' . $payment_intent->id . '">Checkout</button>';
 
         // Include Stripe.js and custom JS
       
         $output .= '<script type="text/javascript">
             var stripe = Stripe("' . STRIPE_TEST_PUBLISHABLE_KEY . '");
+            var elements = stripe.elements();
+            var cardElement = elements.create("card");
+
+            cardElement.mount("#card-element");
+
             var checkoutButton = document.getElementById("stripe-checkout");
 
-            checkoutButton.addEventListener("click", function () {
+            checkoutButton.addEventListener("click", function (event) {
+                event.preventDefault();
+
                 var paymentIntentId = checkoutButton.getAttribute("data-payment-intent");
 
                 fetch("' . admin_url('admin-ajax.php') . '", {
@@ -227,9 +242,10 @@ function wpor_cart_page() {
                 .then(function(response) { return response.json(); })
                 .then(function(data) {
                     var clientSecret = data.client_secret;
+
                     stripe.confirmCardPayment(clientSecret, {
                         payment_method: {
-                            card: cardElement
+                            card: cardElement,
                         }
                     }).then(function(result) {
                         if (result.error) {
