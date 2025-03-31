@@ -153,11 +153,11 @@ function wpor_display_menu() {
         $output .= '<div class="wpor-menu-item">';
         $output .= '<h3>' . $item->post_title . '</h3>';
         $output .= '<p>' . $item->post_content . '</p>';
-        $output .= '<span>£' . get_post_meta($item->ID, 'price', true) . '</span>';
+        $output .= '<p>£' . get_post_meta($item->ID, 'price', true) . '</p>';
         if (get_post_meta($item->ID, 'sale_price', true)) {
-            $output .= '<span>£' . get_post_meta($item->ID, 'sale_price', true) . '</span>';
+            $output .= '<p>£' . get_post_meta($item->ID, 'sale_price', true) . '</p>';
         }
-        $output .= '<button class="add-to-cart" data-item-id="' . $item->ID . '">Add to Cart</button>';
+        $output .= '<button class="add-to-cart btn btn-secondary-sm" data-item-id="' . $item->ID . '">Add to Cart</button>';
         $output .= '</div>';
     }
     $output .= '</div>';
