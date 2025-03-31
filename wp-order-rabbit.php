@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 2.9.9
+ * Version: 3.9.9
  * Author: Your Name
  */
 
@@ -147,17 +147,20 @@ function wpor_display_menu() {
     $args = array('post_type' => 'wpor_menu_item', 'posts_per_page' => -1);
     $menu_items = get_posts($args);
 
-    $output = '<ul class="wpor-menu">';
+    $output = '<div class="wpor-menu">';
     foreach ($menu_items as $item) {
-        $output .= '<li>';
+       
+        $output .= '<div class="wpor-menu-item">';
         $output .= '<h3>' . $item->post_title . '</h3>';
         $output .= '<p>' . $item->post_content . '</p>';
         $output .= '<span>£' . get_post_meta($item->ID, 'price', true) . '</span>';
-                $output .= '<span>£' . get_post_meta($item->ID, 'sale_price', true) . '</span>';
+        if (get_post_meta($item->ID, 'sale_price', true)) {
+            $output .= '<span>£' . get_post_meta($item->ID, 'sale_price', true) . '</span>';
+        }
         $output .= '<button class="add-to-cart" data-item-id="' . $item->ID . '">Add to Cart</button>';
-        $output .= '</li>';
+        $output .= '</div>';
     }
-    $output .= '</ul>';
+    $output .= '</div>';
      // Include JavaScript to handle adding items to the cart
     $output .= '<script type="text/javascript">
         jQuery(document).ready(function($) {
