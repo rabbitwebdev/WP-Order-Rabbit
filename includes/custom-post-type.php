@@ -5,7 +5,8 @@ function wpor_register_menu_items_post_type() {
     $args = array(
         'public' => true,
         'label'  => 'Menu Items',
-        'supports' => array('title', 'editor'),
+        'supports' => array('title', 'editor', 'thumbnail'),
+        'menu_icon'   => 'dashicons-carrot',
     );
     register_post_type('wpor_menu_item', $args);
 }
