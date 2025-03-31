@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 2.0.2
+ * Version: 2.9.9
  * Author: Your Name
  */
 
@@ -104,6 +104,18 @@ function wpor_save_price_meta_box($post_id) {
 
 add_action('save_post', 'wpor_save_price_meta_box');
 
+function wpor_save_sale_price_meta_box($post_id) {
+    // Check if it's a valid save request
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return $post_id;
+
+    if (isset($_POST['wpor_sale_price'])) {
+        update_post_meta($post_id, 'sale_price', sanitize_text_field($_POST['wpor_sale_price']));
+    }
+    return $post_id;
+}
+
+add_action('save_post', 'wpor_save_sale_price_meta_box');
+
 // Add price column to the menu item list in admin
 function wpor_add_price_column($columns) {
     $columns['price'] = 'Price';
@@ -141,6 +153,7 @@ function wpor_display_menu() {
         $output .= '<h3>' . $item->post_title . '</h3>';
         $output .= '<p>' . $item->post_content . '</p>';
         $output .= '<span>£' . get_post_meta($item->ID, 'price', true) . '</span>';
+                $output .= '<span>£' . get_post_meta($item->ID, 'sale_price', true) . '</span>';
         $output .= '<button class="add-to-cart" data-item-id="' . $item->ID . '">Add to Cart</button>';
         $output .= '</li>';
     }
