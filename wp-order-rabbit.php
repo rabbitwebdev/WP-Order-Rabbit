@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 2.0.1
+ * Version: 2.0.2
  * Author: Your Name
  */
 
@@ -16,6 +16,7 @@ define('WPOR_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WPOR_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 // Include necessary files
+require_once WPOR_PLUGIN_DIR . 'includes/custom-post-type.php';
 require_once WPOR_PLUGIN_DIR . 'includes/class-wpor-cart.php';
 require_once WPOR_PLUGIN_DIR . 'includes/class-wpor-stripe.php';
 require_once WPOR_PLUGIN_DIR . 'includes/class-wpor-orders.php';
@@ -44,17 +45,7 @@ function wpor_enqueue_assets() {
 
 add_action('wp_enqueue_scripts', 'wpor_enqueue_assets');
 
-// Register Custom Post Type for Menu Items
-function wpor_register_menu_items_post_type() {
-    $args = array(
-        'public' => true,
-        'label'  => 'Menu Items',
-        'supports' => array('title', 'editor'),
-    );
-    register_post_type('wpor_menu_item', $args);
-}
 
-add_action('init', 'wpor_register_menu_items_post_type');
 
 // Add a custom meta box for the price field
 function wpor_add_price_meta_box() {
