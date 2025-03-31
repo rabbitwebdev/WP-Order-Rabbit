@@ -1,0 +1,20 @@
+.wpor-menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+.wpor-menu-item:hover {
+    background-color: #333;
+    color: white;
+}
+.wpor-menu-item {
+    width: 300px;
+    background-color: black;
+    padding: 10px;
+    margin: 10px 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    height: 300px;
+}
