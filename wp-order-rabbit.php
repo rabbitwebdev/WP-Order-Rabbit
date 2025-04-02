@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 4.1.3
+ * Version: 4.1.4
  * Author: Your Name
  */
 
@@ -155,9 +155,11 @@ function wpor_display_menu() {
         $output .= '<div class="wpor-menu-item-details">';
         $output .= '<h3>' . $item->post_title . '</h3>';
         $output .= '<p class="small">' . $item->post_content . '</p>';
-        $output .= '<p class="wpor-price">£' . get_post_meta($item->ID, 'price', true) . '</p>';
         if (get_post_meta($item->ID, 'sale_price', true)) {
-            $output .= '<p class="wpor-sale-price">£' . get_post_meta($item->ID, 'sale_price', true) . '</p>';
+            $output .= '<p class="wpor-price small">£' . get_post_meta($item->ID, 'price', true) . '</p>';
+            $output .= '<p class="wpor-sale-price">New Price £' . get_post_meta($item->ID, 'sale_price', true) . '</p>';
+        } else {
+                    $output .= '<p class="wpor-price">£' . get_post_meta($item->ID, 'price', true) . '</p>';
         }
         $output .= '</div>';
         $output .= '<button class="add-to-cart btn btn-secondary-sm" data-item-id="' . $item->ID . '">Add to Cart</button>';
