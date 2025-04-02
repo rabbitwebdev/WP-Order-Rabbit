@@ -6,11 +6,12 @@
 .wpor-menu-item:hover {
     background-color: #333;
     color: white;
+    transition: 1s;
 }
 .wpor-menu-item {
     width: 300px;
     background-color: black;
-    padding: 10px;
+    padding: 10px 10px 0px 10px;
     margin: 10px 0px;
     display: flex;
     flex-direction: column;
@@ -18,6 +19,7 @@
     justify-content: space-between;
     height: 300px;
     position: relative;
+    transition: 1s;
 }
 
 .wpor-menu-item-image {
@@ -41,4 +43,22 @@
     z-index: 1;
     color: white;
     text-align: left;
+}
+
+.wpor-menu-item .add-to-cart.btn.btn-secondary-sm {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    margin: 0;
+    font-size: 15px;
+    color: #fff;
+    border-top: 1px solid #fff;
+    padding: 8px 5px;
+    font-weight: 400;
+    transition: 1s;
+}
+
+.wpor-menu-item .add-to-cart.btn.btn-secondary-sm:hover {
+   transition: 1s;
+   letter-spacing: 2px;
 }
