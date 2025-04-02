@@ -449,9 +449,9 @@ function wpor_add_to_woocommerce_cart() {
             $menu_item = get_post($item_id);
             $price = get_post_meta($item_id, 'price', true);
             $sale_price = get_post_meta($item_id, 'sale_price', true);
-            $price = $sale_price ? $sale_price : $price; // Use sale price if available
+
             // Add custom WooCommerce product for WP Order Rabbit items
-            $product_id = wpor_create_woocommerce_product($menu_item->post_title, $price);
+            $product_id = wpor_create_woocommerce_product($menu_item->post_title, $price, $sale_price);
             
             // Add product to WooCommerce cart
             WC()->cart->add_to_cart($product_id, $item['quantity']);
@@ -462,7 +462,7 @@ function wpor_add_to_woocommerce_cart() {
         exit;
     }
 }
-function wpor_create_woocommerce_product($title, $price) {
+function wpor_create_woocommerce_product($title, $price, $sale_price) {
     $product = new WC_Product_Simple();
     $product->set_name($title);
     // Convert price to a valid number
@@ -475,7 +475,9 @@ function wpor_create_woocommerce_product($title, $price) {
 
     $product->set_price($price);
     $product->set_regular_price($price);
-    
+    if ($sale_price) {
+        $product->set_sale_price($sale_price);
+    } 
     $product->set_status('publish'); // Ensure it's published
     $product->set_catalog_visibility('hidden'); // Hide from the shop
     $product->set_virtual(true); // Make it a virtual product
