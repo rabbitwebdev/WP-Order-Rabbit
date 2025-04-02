@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 4.1.4
+ * Version: 4.1.5
  * Author: Your Name
  */
 
@@ -159,7 +159,7 @@ function wpor_display_menu() {
             $output .= '<p class="wpor-price small">£' . get_post_meta($item->ID, 'price', true) . '</p>';
             $output .= '<p class="wpor-sale-price">New Price £' . get_post_meta($item->ID, 'sale_price', true) . '</p>';
         } else {
-                    $output .= '<p class="wpor-price">£' . get_post_meta($item->ID, 'price', true) . '</p>';
+            $output .= '<p class="wpor-price">£' . get_post_meta($item->ID, 'price', true) . '</p>';
         }
         $output .= '</div>';
         $output .= '<button class="add-to-cart btn btn-secondary-sm" data-item-id="' . $item->ID . '">Add to Cart</button>';
@@ -448,7 +448,8 @@ function wpor_add_to_woocommerce_cart() {
         foreach ($cart as $item_id => $item) {
             $menu_item = get_post($item_id);
             $price = get_post_meta($item_id, 'price', true);
-            
+            $sale_price = get_post_meta($item_id, 'sale_price', true);
+            $price = $sale_price ? $sale_price : $price; // Use sale price if available
             // Add custom WooCommerce product for WP Order Rabbit items
             $product_id = wpor_create_woocommerce_product($menu_item->post_title, $price);
             
@@ -464,7 +465,7 @@ function wpor_add_to_woocommerce_cart() {
 function wpor_create_woocommerce_product($title, $price) {
     $product = new WC_Product_Simple();
     $product->set_name($title);
-    
+    $product->set_featured_image(get_the_post_thumbnail_url($item_id, 'full')); // Set the featured image
     // Convert price to a valid number
     $price = floatval($price);
     
