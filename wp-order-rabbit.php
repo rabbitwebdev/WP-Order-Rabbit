@@ -465,7 +465,6 @@ function wpor_add_to_woocommerce_cart() {
 function wpor_create_woocommerce_product($title, $price) {
     $product = new WC_Product_Simple();
     $product->set_name($title);
-    $product->set_featured_image(get_the_post_thumbnail_url($item_id, 'full')); // Set the featured image
     // Convert price to a valid number
     $price = floatval($price);
     
