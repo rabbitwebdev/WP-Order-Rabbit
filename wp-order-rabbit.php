@@ -191,7 +191,7 @@ add_shortcode('wpor_menu', 'wpor_display_menu');
 function wpor_add_to_cart() {
     if (isset($_POST['item_id'])) {
         $item_id = intval($_POST['item_id']);
-        WPOR_Cart::add_item($item_id, 1); // Default quantity is 1
+        WPOR_Cart::add_item($item_id); // Default quantity is 1
         wp_send_json_success('Item added to cart!');
     }
     wp_send_json_error('Invalid item ID');
@@ -223,6 +223,7 @@ add_action('wp_ajax_nopriv_wpor_add_to_cart', 'wpor_add_to_cart');
 
 function wpor_cart_page() {
     $cart = WPOR_Cart::get_cart();
+     $total_price = WPOR_Cart::get_cart_total();
 
     if (empty($cart)) {
         return '<p>Your cart is empty.</p>';
@@ -238,7 +239,7 @@ function wpor_cart_page() {
 
     $output .= '</ul>';
     $output .= '<a href="' . esc_url(add_query_arg('wpor_add_to_wc_cart', 'true', wc_get_checkout_url())) . '" class="button btn btn-secondary">Proceed to Checkout</a>';
-
+ $output .= '<p>Total: £' . $total_price . '</p>';
     return $output;
 }
 add_shortcode('wpor_cart', 'wpor_cart_page');
