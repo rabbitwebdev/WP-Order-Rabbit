@@ -222,8 +222,15 @@ add_action('wp_ajax_nopriv_wpor_add_to_cart', 'wpor_add_to_cart');
 
 
 function wpor_cart_page() {
+    // Check if the clear cart action is triggered
+    if (isset($_GET['wpor_clear_cart'])) {
+        WPOR_Cart::clear_cart();
+        wp_redirect(remove_query_arg('wpor_clear_cart')); // Redirect to avoid resubmission
+        exit;
+    }
+
     $cart = WPOR_Cart::get_cart();
-     $total_price = WPOR_Cart::get_cart_total();
+    $total_price = WPOR_Cart::get_cart_total();
 
     if (empty($cart)) {
         return '<p>Your cart is empty.</p>';
@@ -234,15 +241,24 @@ function wpor_cart_page() {
 
     foreach ($cart as $item_id => $item) {
         $menu_item = get_post($item_id);
-        $output .= '<li>' . $menu_item->post_title . ' x' . $item['quantity'] . '</li>';
+        $output .= '<li>' . esc_html($menu_item->post_title) . ' x' . intval($item['quantity']) . '</li>';
     }
 
     $output .= '</ul>';
-    $output .= '<a href="' . esc_url(add_query_arg('wpor_add_to_wc_cart', 'true', wc_get_checkout_url())) . '" class="button btn btn-secondary">Proceed to Checkout</a>';
- $output .= '<p>Total: £' . $total_price . '</p>';
+    $output .= '<p>Total: £' . number_format($total_price, 2) . '</p>';
+
+    // Clear Cart Button
+    $clear_cart_url = esc_url(add_query_arg('wpor_clear_cart', 'true'));
+    $output .= '<a href="' . $clear_cart_url . '" class="button btn btn-danger">Clear Cart</a> ';
+
+    // Proceed to Checkout Button
+    $checkout_url = esc_url(add_query_arg('wpor_add_to_wc_cart', 'true', wc_get_checkout_url()));
+    $output .= '<a href="' . $checkout_url . '" class="button btn btn-secondary">Proceed to Checkout</a>';
+
     return $output;
 }
 add_shortcode('wpor_cart', 'wpor_cart_page');
+
 
 // function wpor_cart_page() {
 //     $cart = WPOR_Cart::get_cart();
