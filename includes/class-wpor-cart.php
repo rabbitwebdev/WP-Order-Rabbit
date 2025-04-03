@@ -46,7 +46,9 @@ class WPOR_Cart {
 
     // Clear the cart
     public static function clear_cart() {
-        unset($_SESSION['wpor_cart']);
+        if (isset($_SESSION['wpor_cart'])) {
+            unset($_SESSION['wpor_cart']);
+        }
     }
 }
 
