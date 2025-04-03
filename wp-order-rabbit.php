@@ -467,13 +467,13 @@ function wpor_add_to_woocommerce_cart() {
             $price = get_post_meta($item_id, 'price', true);
             $sale_price = get_post_meta($item_id, 'sale_price', true);
             $thumbnail_id = get_post_meta( $item_id, '_thumbnail_id', true );
-         
+         $quantity = $item['quantity'];
 
             // Add custom WooCommerce product for WP Order Rabbit items
             $product_id = wpor_create_woocommerce_product($menu_item->post_title, $price, $sale_price, $thumbnail_id);
             
             // Add product to WooCommerce cart
-            WC()->cart->add_to_cart($product_id, $item['quantity']);
+            WC()->cart->add_to_cart($product_id, $quantity);
         }
 
         // Redirect to WooCommerce checkout
