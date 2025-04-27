@@ -245,7 +245,7 @@ function wpor_cart_page() {
     }
 
     $output .= '</ul>';
-    $output .= '<p>Total: £' . number_format($total_price, 2) . '</p>';
+    $output .= '<p>Total: £' . number_format($total_price) . '</p>';
 
     // Clear Cart Button
     $clear_cart_url = esc_url(add_query_arg('wpor_clear_cart', 'true'));
@@ -502,7 +502,7 @@ function wpor_create_woocommerce_product($title, $price, $sale_price, $thumbnail
     $product->set_catalog_visibility('hidden'); // Hide from the shop
     $product->set_virtual(true); // Make it a virtual product
     $product->set_manage_stock(false); // No stock management
-    $product->set_sold_individually(true); // Prevent duplicate purchases
+    $product->set_sold_individually(false); // Prevent duplicate purchases
 
     $product_id = $product->save(); // Save the product
 
