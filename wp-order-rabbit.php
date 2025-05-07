@@ -191,18 +191,11 @@ function wpor_display_menu() {
                     action: "wpor_add_to_cart",
                     item_id: itemId
                 }, function(response) {
-                   if (response.success) {
-                    $("#wpor-cart-summary").load(location.href + " #wpor-cart-summary>*", "");
-                } else {
-                    alert("Error adding item.");
-                }
+                    alert("Item added to cart!");
                 });
             });
         });
     </script>';
-
-    output .= '<div id="wpor-cart-summary">nice</div>';
-   
 
     return $output;
 }
