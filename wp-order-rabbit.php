@@ -177,8 +177,6 @@ function wpor_display_menu() {
                 $.post("'. admin_url('admin-ajax.php') .'", {
                     action: "wpor_add_to_cart",
                     item_id: itemId
-                }, function(response) {
-                    alert("Item added to cart!");
                 });
             });
         });
@@ -189,12 +187,14 @@ function wpor_display_menu() {
 
 add_shortcode('wpor_menu', 'wpor_display_menu');
 
+
+
 // Handle adding items to the cart via AJAX
 function wpor_add_to_cart() {
     if (isset($_POST['item_id'])) {
         $item_id = intval($_POST['item_id']);
-        WPOR_Cart::add_item($item_id); // Default quantity is 1
-        wp_send_json_success('Item added to cart!');
+        WPOR_Cart::add_item($item_id, 1); // Default quantity is 1
+        wp_send_json_success('Item added nice to cart!');
     }
     wp_send_json_error('Invalid item ID');
 }
