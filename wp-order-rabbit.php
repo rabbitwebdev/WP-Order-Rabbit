@@ -2,13 +2,15 @@
 /**
  * Plugin Name: WP Order Rabbit
  * Description: A plugin to manage food menu items, take orders, and process payments using Stripe.
- * Version: 9.9.0
+ * Version: 11.1.1
  * Author: Your Name
  */
 
 
-// define('STRIPE_TEST_SECRET_KEY', 'sk_test_51D6ONeIF6Cy7jqRet27KpvHQKXN0jEKPm6tj2OUZhgjhbxKQY7QekwB3kothe2oVCRsvlOcFJme7AIBVqfwDuGVA00yBMG4twd');
-// define('STRIPE_TEST_PUBLISHABLE_KEY', 'pk_test_51D6ONeIF6Cy7jqReWezmkFBNCNdGvKHr1HyWNaSTCH8dFRZL9K26NINBrzB1Yh9nPjbWoRDTuT7XSdxAQVCpLPrQ00WH5dLzyT');
+// Exit if accessed directly
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 
 // Define constants for plugin paths
@@ -135,13 +137,13 @@ function wpor_display_price_column($column, $post_id) {
 add_action('manage_wpor_menu_item_posts_custom_column', 'wpor_display_price_column', 10, 2);
 
  // Start the session if it's not already started
-// function wpor_start_session() {
-//     if (!session_id()) {
-//         session_start();
-//     }
-// }
+function wpor_start_session() {
+    if (!session_id()) {
+        session_start();
+    }
+}
 
-// add_action('init', 'wpor_start_session');
+add_action('init', 'wpor_start_session');
 
 function wpor_display_menu() {
     $args = array('post_type' => 'wpor_menu_item', 'posts_per_page' => -1);
