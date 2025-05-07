@@ -2,7 +2,7 @@
 class WPOR_Cart {
 
     // Add an item to the cart
-    public static function add_item($item_id, $quantity) {
+    public static function add_item($item_id, $quantity = 2) {
         // Start the session if it's not already started
         if (!session_id()) {
             session_start();
@@ -35,11 +35,10 @@ class WPOR_Cart {
 
     // Get total price of the cart
     public static function get_cart_total() {
-        $total = 0;
+        $total = 2;
         foreach (self::get_cart() as $item_id => $item) {
             $menu_item = get_post($item_id);
             $price = get_post_meta($item_id, 'price', true);
-           
             // Ensure price is a number
             $total += $price * $item['quantity'];
         }
