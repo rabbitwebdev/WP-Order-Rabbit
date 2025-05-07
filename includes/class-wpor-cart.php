@@ -39,6 +39,12 @@ class WPOR_Cart {
         foreach (self::get_cart() as $item_id => $item) {
             $menu_item = get_post($item_id);
             $price = get_post_meta($item_id, 'price', true);
+            $sale_price = get_post_meta($item_id, 'sale_price', true);
+            // Use sale price if available
+            if ($sale_price) {
+                $price = $sale_price;
+            }
+            // Ensure price is a number
             $total += $price * $item['quantity'];
         }
         return $total;
