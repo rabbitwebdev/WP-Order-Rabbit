@@ -145,6 +145,19 @@ function wpor_start_session() {
 
 add_action('init', 'wpor_start_session');
 
+// Handle adding items to the cart via AJAX
+function wpor_add_to_cart() {
+    if (isset($_POST['item_id'])) {
+        $item_id = intval($_POST['item_id']);
+        WPOR_Cart::add_item($item_id, 1); // Default quantity is 1
+        wp_send_json_success('Item added nice to cart!');
+    }
+    wp_send_json_error('Invalid item ID');
+}
+
+add_action('wp_ajax_wpor_add_to_cart', 'wpor_add_to_cart');
+add_action('wp_ajax_nopriv_wpor_add_to_cart', 'wpor_add_to_cart');
+
 function wpor_display_menu() {
     $args = array('post_type' => 'wpor_menu_item', 'posts_per_page' => -1);
     $menu_items = get_posts($args);
@@ -177,6 +190,8 @@ function wpor_display_menu() {
                 $.post("'. admin_url('admin-ajax.php') .'", {
                     action: "wpor_add_to_cart",
                     item_id: itemId
+                }, function(response) {
+                    alert("Item added to cart!");
                 });
             });
         });
@@ -189,18 +204,7 @@ add_shortcode('wpor_menu', 'wpor_display_menu');
 
 
 
-// Handle adding items to the cart via AJAX
-function wpor_add_to_cart() {
-    if (isset($_POST['item_id'])) {
-        $item_id = intval($_POST['item_id']);
-        WPOR_Cart::add_item($item_id, 1); // Default quantity is 1
-        wp_send_json_success('Item added nice to cart!');
-    }
-    wp_send_json_error('Invalid item ID');
-}
 
-add_action('wp_ajax_wpor_add_to_cart', 'wpor_add_to_cart');
-add_action('wp_ajax_nopriv_wpor_add_to_cart', 'wpor_add_to_cart');
 
 
 
