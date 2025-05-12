@@ -176,7 +176,7 @@ function wpor_display_menu() {
             $output .= '<p class="wpor-price">£' . get_post_meta($item->ID, 'price', true) . '</p>';
         }
         $output .= '</div>';
-        $output .= '<button class="add-to-cart btn btn-secondary-sm" data-item-id="' . $item->ID . '">Add to order</button>';
+        $output .= '<button class="add-to-cart btn btn-secondary-sm" data-add-to-cart-behaviour="open_drawer" data-item-id="' . $item->ID . '">Add to order</button>';
         $output .= '</div>';
     }
     $output .= '</div>';
