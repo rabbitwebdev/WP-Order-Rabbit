@@ -171,13 +171,12 @@ function wpor_display_menu() {
         $output .= '<h3>' . $item->post_title . '</h3>';
         $output .= '<p class="small">' . $item->post_content . '</p>';
         if (get_post_meta($item->ID, 'sale_price', true)) {
-            $output .= '<p class="wpor-price small">£' . get_post_meta($item->ID, 'price', true) . '</p>';
             $output .= '<p class="wpor-sale-price">New Price £' . get_post_meta($item->ID, 'sale_price', true) . '</p>';
         } else {
             $output .= '<p class="wpor-price">£' . get_post_meta($item->ID, 'price', true) . '</p>';
         }
         $output .= '</div>';
-        $output .= '<button class="add-to-cart btn btn-secondary-sm" data-item-id="' . $item->ID . '">Add to Cart</button>';
+        $output .= '<button class="add-to-cart btn btn-secondary-sm" data-item-id="' . $item->ID . '">Add to order</button>';
         $output .= '</div>';
     }
     $output .= '</div>';
@@ -251,7 +250,7 @@ function wpor_cart_page() {
     }
 
     $output .= '</ul>';
-    $output .= '<p>Total: £' . number_format($total_price) . '</p>';
+    $output .= '<p>Total: £' . $total_price . '</p>';
 
     // Clear Cart Button
     $clear_cart_url = esc_url(add_query_arg('wpor_clear_cart', 'true'));
