@@ -35,7 +35,7 @@ class WPOR_Cart {
 
     // Get total price of the cart
     public static function get_cart_total() {
-        $total = 2;
+        $total = 1;
         foreach (self::get_cart() as $item_id => $item) {
             $menu_item = get_post($item_id);
             $price = get_post_meta($item_id, 'price', true);
