@@ -171,7 +171,7 @@ function wpor_display_menu() {
         $output .= '<h3>' . $item->post_title . '</h3>';
         $output .= '<p class="small">' . $item->post_content . '</p>';
         if (get_post_meta($item->ID, 'sale_price', true)) {
-            $output .= '<p class="wpor-sale-price">New Price £' . get_post_meta($item->ID, 'sale_price', true) . '</p>';
+            $output .= '<p class="wpor-sale-price">£' . get_post_meta($item->ID, 'sale_price', true) . '</p>';
         } else {
             $output .= '<p class="wpor-price">£' . get_post_meta($item->ID, 'price', true) . '</p>';
         }
